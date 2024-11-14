@@ -24,23 +24,49 @@ CoverLabel::~CoverLabel() {
 
 }
 
+void CoverLabel::setPartnerGeometry(int x, int y, int width, int height) {
+    if(0 != _partnerWidth && 0 != _partnerHeight) {
+        //等比例操作 原图横宽/原伙伴横宽 == 现在横宽/现在伙伴横宽
+        double ratio = width/_partnerWidth;
+        _currentWidth = qRound(_currentWidth*ratio);
+        _currentHeight = qRound(_currentHeight*ratio);
+        _currentX = qRound(_currentX*ratio);
+        _currentY = qRound(_currentY*ratio);
+    }
+    //因为_currentX和_currentY是相对于partner窗口的，因此x,y改变不影响
+    _partnerX = x;
+    _partnerY = y;
+    _partnerWidth = width;
+    _partnerHeight = height;
+    this->resize(_currentWidth,_currentHeight);
+    this->move(_currentX+_partnerX,_currentY+_partnerY);
+}
+
+void CoverLabel::setDefaultGeometry() {
+    _currentX = 0;
+    _currentY = 0;
+    _currentWidth = _partnerWidth;
+    _currentHeight = _partnerHeight;
+    this->resize(_currentWidth,_currentHeight);
+    this->move(_currentX+_partnerX,_currentY+_partnerY);
+}
+
+
 void CoverLabel::SizeChanged(QSize size) {
+    //区分是图像主动进行的size改变，还是窗口
     _currentX = 0;
     _currentY = 0;
     _partnerWidth = size.width();
     _partnerHeight = size.height();
     _currentWidth = size.width();
     _currentHeight = size.height();
-    this->resize(size);
+
 }
 
 void CoverLabel::Move(int x,int y) {
     _partnerX = x;
     _partnerY = y;
-    // _currentX = x;
-    // _currentY = y;
-    this->move(x,y);
-
+    this->move(_currentX+_partnerX,_currentY+_partnerY);
 }
 
 void CoverLabel::Zoom(double srcP, double dstP) {
@@ -52,8 +78,8 @@ void CoverLabel::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     QPen pen;
     pen.setStyle(Qt::SolidLine);
-    pen.setWidth(8);
-    pen.setBrush(Qt::black);
+    pen.setWidth(5);
+    pen.setBrush(QColor(250,150,150));
     painter.setPen(pen);
     int width = this->width();
     int height = this->height();
@@ -79,7 +105,7 @@ void CoverLabel::paintEvent(QPaintEvent *event) {
     painter.drawLine(line7);
     painter.drawLine(line8);
     pen.setStyle(Qt::SolidLine);
-    pen.setWidth(3);
+    pen.setWidth(1);
     pen.setBrush(QColor(150,150,150));
     painter.setPen(pen);
     painter.drawLine(line9);
@@ -112,6 +138,7 @@ void CoverLabel::mouseMoveEvent(QMouseEvent *event) {
         int height = this->height();
         int x = event->pos().x();
         int y = event->pos().y();
+        //该部分是否可以写进css中
         if(x>=0 && x<=10 && y>=0 && y<=10) {
             this->setCursor(Qt::SizeFDiagCursor);
             _direction = 7;
@@ -145,11 +172,12 @@ void CoverLabel::mouseMoveEvent(QMouseEvent *event) {
             _direction = 6;
         }
         else {
-            this->setCursor(Qt::SizeAllCursor);
+            this->setCursor(Qt::ArrowCursor);
             _direction = 5;
         }
     }
     if(_onLeftMouseBtn) {
+        this->setCursor(Qt::ClosedHandCursor);
         _currentPoint = QCursor::pos();
         if(5 == _direction) {
             _move();

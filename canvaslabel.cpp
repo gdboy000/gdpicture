@@ -13,7 +13,7 @@ CanvasLabel::CanvasLabel(QWidget *parent) : QLabel(parent)
 {
     _mask = new CoverLabel(parent);
     _mask->setStyleSheet("background-color: rgba(255, 255, 255, 150);"
-                         "border:3px dotted black");
+                         "border:1px dotted black");
     _mask->hide();
 }
 
@@ -182,7 +182,9 @@ bool CanvasLabel::_reLayout(double zoomLevel) {
         //原中心点
         tmp1 = suitable_size.toSize().width()/2+_x;
         tmp2 = suitable_size.toSize().height()/2+_y;
-        qDebug()<<"中心点改变："<<tmp1<<","<<tmp2;
+        // qDebug()<<"中心点改变："<<tmp1<<","<<tmp2;
+        _mask->setPartnerGeometry(_x,_y,suitable_size.toSize());
+        _mask->setDefaultGeometry();
     }
     else {
         suitable_size = QSize(_prototypeImage.width()*zoomLevel,_prototypeImage.height()*zoomLevel);
@@ -241,9 +243,8 @@ bool CanvasLabel::_reLayout(double zoomLevel) {
         // qDebug()<<"_x: "<<_x<<" _y: "<<_y<<" x: "<<x<<" y: "<<y;
         _currentImageSize = suitable_size;
         _currentZoomRatio = zoomLevel;
+        _mask->setPartnerGeometry(_x,_y,suitable_size.toSize());
     }
-    _mask->SizeChanged(suitable_size.toSize());
-    _mask->Move(_x,_y);
     _resizeLabel(suitable_size.toSize());
     this->move(_x,_y);
     return true;
@@ -284,6 +285,7 @@ bool CanvasLabel::_resizeLabel(int width,int height) {
 void CanvasLabel::_move() {
     int moveX = _currentPoint.x() - _startPoint.x();
     int moveY = _currentPoint.y() - _startPoint.y();
+    _mask->Move(_x+moveX,_y+moveY);
     this->move(_x+moveX,_y+moveY);
     // tmp1 = _currentImageSize.toSize().width()/2+_x+moveX;
     // tmp2 = _currentImageSize.toSize().height()/2+_y+moveY;
