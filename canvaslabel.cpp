@@ -45,7 +45,7 @@ bool CanvasLabel::ShowImage(const QString &path) {
         else {
             _limitMaxZoomRatio = _parentSize.height()/static_cast<double>(_image.height());
         }
-        return _reLayout();
+        return true;
     }
     return false;
 }
@@ -67,6 +67,7 @@ void CanvasLabel::SizeChanged(QSize size) {
         _limitMaxZoomRatio = _currentParentSize.height()/static_cast<double>(_image.height());
     }
     _reLayout();
+    _mask->show();
 }
 
 void CanvasLabel::mouseMoveEvent(QMouseEvent *event) {
@@ -241,6 +242,8 @@ bool CanvasLabel::_reLayout(double zoomLevel) {
         _currentImageSize = suitable_size;
         _currentZoomRatio = zoomLevel;
     }
+    _mask->SizeChanged(suitable_size.toSize());
+    _mask->Move(_x,_y);
     _resizeLabel(suitable_size.toSize());
     this->move(_x,_y);
     return true;

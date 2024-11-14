@@ -25,6 +25,8 @@ CoverLabel::~CoverLabel() {
 }
 
 void CoverLabel::SizeChanged(QSize size) {
+    _currentX = 0;
+    _currentY = 0;
     _partnerWidth = size.width();
     _partnerHeight = size.height();
     _currentWidth = size.width();
