@@ -31,17 +31,13 @@ MainWindow::MainWindow(QWidget *parent) :
     _ui->statusbar->addWidget(_statusBarLabel);
     _initConnect();
     _decorationToolsBar();
-    _openFile("/home/gao/background1.png");
+    _openFile("/home/gao/preview.jpg");
 }
 
 MainWindow::~MainWindow() {
     delete _ui;
 }
 
-// void MainWindow::showEvent(QShowEvent *event) {
-//     _ui->widget->resize(_ui->centralwidget->size());
-//     QMainWindow::showEvent(event);
-// }
 /**
  * change resize than re-render showwidget and canvaslabel
  * @param event
@@ -108,9 +104,7 @@ void MainWindow::_openFileWidget() {
 void MainWindow::_openFile(const QString &path) {
     _canvasLabel->show();
     if(_canvasLabel->ShowImage(path)) {
-        SHOW("show image success");
         _wheelEventFlag = true;
-        //_ui->toolBar->show();
     }
 }
 

@@ -38,7 +38,7 @@ void CoverLabel::Move(int x,int y) {
     // _currentX = x;
     // _currentY = y;
     this->move(x,y);
-    
+
 }
 
 void CoverLabel::Zoom(double srcP, double dstP) {
