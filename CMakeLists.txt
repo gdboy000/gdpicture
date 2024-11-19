@@ -17,15 +17,16 @@ qt_add_executable(PicEditor
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
-        canvaslabel.cpp
-        canvaslabel.h
+        canvaslayer.cpp
+        canvaslayer.h
         showwidget.cpp
         showwidget.h
         cvcore.h
         cvzoom.cpp
         cvcore.cpp
-        coverlabel.cpp
-        coverlabel.h
+        coverlayer.cpp
+        coverlayer.h
+        clayer.h
 )
 
 target_link_libraries(PicEditor PRIVATE

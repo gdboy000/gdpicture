@@ -8,7 +8,6 @@
 #include <QMainWindow>
 
 class QLabel;
-class CanvasLabel;
 class ShowWidget;
 
 QT_BEGIN_NAMESPACE
@@ -28,7 +27,6 @@ protected:
 private:
     Ui::MainWindow *_ui;
     QString _filePath;
-    CanvasLabel *_canvasLabel = nullptr;
     ShowWidget *_showWidget = nullptr;
     QLabel* _statusBarLabel;
     bool _wheelEventFlag = false;

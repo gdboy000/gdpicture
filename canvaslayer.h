@@ -5,25 +5,40 @@
 #ifndef CANVASLABEL_H
 #define CANVASLABEL_H
 
-#include <QLabel>
 #include <QImage>
 
-class CoverLabel;
+#include "clayer.h"
+#include "coverlayer.h"
 
-class CanvasLabel: public QLabel {
+/**
+ *  画布层
+ *  功能：显示图像，支持右键拖拉移动，滚轮+ctrl缩放
+ */
+class CanvasLayer: public CLayer {
     Q_OBJECT
 public:
-    explicit  CanvasLabel(QWidget *parent = nullptr);
-    ~CanvasLabel() override;
+    explicit  CanvasLayer(QWidget *parent = nullptr);
+    ~CanvasLayer() override;
     bool ShowImage(const QString &);//reset file path
+    void setImage(const QImage&);//获取图像
+    void showImage();
+    void showImage(const QImage&);//获取并展示图像
     void Zoom(int);
     void SizeChanged(QSize);
+    void setMaskLayer(CoverLayer* label){_mask = label;}
+    void setHigherSize(const QSize&);//获取上层大小
+    // void setPosition(const QPoint &) override;
+    // void setSize(const QSize&) override;
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void hideEvent(QHideEvent *event) override{ if(nullptr!=_mask)_mask->hide();}
+    void moveEvent(QMoveEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 private:
-    CoverLabel* _mask;
+    CoverLayer* _mask = nullptr;
     QSize   _parentSize = {0,0};//parent widget size
     QSizeF _currentParentSize;
     QImage _image;
@@ -61,18 +76,18 @@ private:
     int _currentOffsetY = 0;
     QSize _labelSize;//Current label size
     bool _reLayout(double zoomLevel = 0.00);
-    bool _layoyt(double percentage = 0.00);//set label layout
     bool _resizeLabel(double);//resize label rely on ratio arg
     bool _resizeLabel(int,int);//resize label with size
     bool _resizeLabel(QSize size){return _resizeLabel(size.width(),size.height()); }
     void _move();
-    void _startMove();
-    void _stopMove();
+
 
 public slots:
 
 signals:
     void sendMessage(QString);
+    void sizeChanges(const QSize&);
+    void positionChanges(const QPoint&);
 
 
 
