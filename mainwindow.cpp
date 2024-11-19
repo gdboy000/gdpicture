@@ -21,16 +21,25 @@ MainWindow::MainWindow(QWidget *parent) :
     const QScreen *pScreen = QGuiApplication::primaryScreen();//
     this->move((pScreen->geometry().width() - this->width()) / 2,(pScreen->geometry().height() - this->height()) / 2);
     _ui->menubar->setContextMenuPolicy(Qt::PreventContextMenu);
-    _ui->toolBar->hide();
+
+    _ui->toolBar->hide();//默认隐藏工具栏
+    //展示窗口
     _showWidget = new ShowWidget(_ui->widget);
     _ui->widget->layout()->addWidget(_showWidget);
-    QWidget* widget2 = new QWidget(_ui->widget);
-    _ui->widget->layout()->addWidget(widget2);
-    widget2->hide();
-    // _canvasLabel = new CanvasLabel(_showWidget);
-    // _canvasLabel->hide();
-    _statusBarLabel = new QLabel(this);
-    _ui->statusbar->addWidget(_statusBarLabel);
+    //工具窗口，需要设置最大宽度
+    _toolWidget = new QWidget(_ui->widget);
+    _ui->widget->layout()->addWidget(_toolWidget);
+    _toolWidget->hide();
+    //消息栏设置两个label
+    _statusBarLabel1 = new QLabel(this);
+    _statusBarLabel1->setFixedSize(250,20);
+    _ui->statusbar->addWidget(_statusBarLabel1);
+    // QAction* action = new QAction();
+    // action->setSeparator(true);
+    // _ui->statusbar->addAction(action);//添加分隔符
+    _statusBarLabel2 = new QLabel(this);
+    _ui->statusbar->addWidget(_statusBarLabel2);
+
     _initConnect();
     _decorationToolsBar();
 }
@@ -44,7 +53,10 @@ MainWindow::~MainWindow() {
  * @param event
  */
 void MainWindow::resizeEvent(QResizeEvent *event) {
-    _ui->widget->resize(_ui->centralwidget->size());
+    // _statusBarLabel1->setMaximumWidth(this->width()/3);
+    // QFontMetrics fm(_statusBarLabel1->font());
+    // _statusBarLabel1->setText(fm.elidedText(_statusBarLabel1->text(), Qt::ElideMiddle, _statusBarLabel1->width()));
+    _ui->widget->resize(_ui->centralwidget->size());//未设置布局，不会主动填充
     QMainWindow::resizeEvent(event);
 }
 
@@ -53,20 +65,6 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
  * @param event
  */
 void MainWindow::wheelEvent(QWheelEvent *event) {
-    if(_wheelEventFlag) {
-        int n = event->angleDelta().y();
-        // 处理滚轮加 Ctrl 键的事件
-        if (event->modifiers() & Qt::ControlModifier) {
-            _zoom(n);
-        } else {
-            if(n > 0) {
-                _pulleyUP(n);
-            }
-            else {
-                _pulleyDown(-n);
-            }
-        }
-    }
 }
 
 /**
@@ -77,12 +75,8 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
 void MainWindow::_initConnect() {
     connect(_ui->open,&QAction::triggered,this,&MainWindow::_openFileWidget);
     connect(_ui->close,&QAction::triggered,[this]{this->close();});
-    connect(_ui->tool,&QAction::triggered,[this] {
-        if(!_wheelEventFlag) {_statusBarLabel->setText("无操作图像"); return;}
-        if(this->_ui->toolBar->isVisible()) this->_ui->toolBar->hide();
-        else this->_ui->toolBar->show();
-    });
-    connect(_showWidget,&ShowWidget::setStatusMessage,[this](const QString& str){_statusBarLabel->setText(str);});
+    connect(_ui->tool,&QAction::triggered,this,&MainWindow::_toolsBarShow);
+    connect(_showWidget,&ShowWidget::statusMessageChanges,[this](const QString& str){_statusBarLabel2->setText(str);});
 }
 
 /**
@@ -111,55 +105,20 @@ void MainWindow::_openFileWidget() {
     _filePath = QFileDialog::getOpenFileName(this, tr("Open File"), "/home/gao", tr("Image Files (*.png *.jpg *.bmp *.jepg)"));
     if(_showWidget->openFile(_filePath)){
         _wheelEventFlag = true;
+        _toolsBarShow();
+        _statusBarLabel1->setText(_filePath);
+        QFontMetrics fm(_statusBarLabel1->font());
+        _statusBarLabel1->setText(fm.elidedText(_filePath, Qt::ElideMiddle, _statusBarLabel1->width()));
     }
-
 }
 
 /**
- * 废弃
- * transmit to canvas label to show image
- * @param path file path
+ * tools bar to display
  */
-void MainWindow::_openFile(const QString &path) {
-    if(_showWidget->openFile(path)) {
-        qDebug()<<"return true;";
-        _wheelEventFlag = true;
-    }
-    // _canvasLabel->show();
-    // if(_canvasLabel->ShowImage(path)) {
-    //     qDebug()<<path<<"打开成功";
-    //     _wheelEventFlag = true;
-    // }
-}
-
-/**
- * tailor image function
- */
-void MainWindow::_tailor() {
-    // _canvasLabel->setMaskLayer();
-}
-
-void MainWindow::_zoom(int n) {
-    //Zoom  from current center position
-    // _canvasLabel->Zoom(n/120);
-}
-
-void MainWindow::_pulleyUP(int) {
-
-}
-
-
-void MainWindow::_pulleyDown(int) {
-
-}
-
-
-/**
- * reset status bar label text
- * @param str message
- */
-void MainWindow::setStatusBarMessage(QString str) {
-    _statusBarLabel->setText(str);
+void MainWindow::_toolsBarShow() const{
+    if(!_wheelEventFlag) {_statusBarLabel1->setText("无操作图像"); return;}
+    if(this->_ui->toolBar->isVisible()) this->_ui->toolBar->hide();
+    else this->_ui->toolBar->show();
 }
 
 

@@ -25,21 +25,17 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 private:
-    Ui::MainWindow *_ui;
+    Ui::MainWindow* _ui;
     QString _filePath;
-    ShowWidget *_showWidget = nullptr;
-    QLabel* _statusBarLabel;
+    ShowWidget* _showWidget = nullptr;
+    QWidget* _toolWidget = nullptr;
+    QLabel* _statusBarLabel1 = nullptr;
+    QLabel* _statusBarLabel2 = nullptr;
     bool _wheelEventFlag = false;
     void _initConnect();//init connect
     void _openFileWidget();//open file widget
-    void _openFile(const QString&);
     void _decorationToolsBar();
-    void _tailor();
-    void _zoom(int);
-    void _pulleyUP(int);
-    void _pulleyDown(int);
-private slots:
-    void setStatusBarMessage(QString);
+    void _toolsBarShow() const;
 };
 
 

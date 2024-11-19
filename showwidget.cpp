@@ -24,6 +24,11 @@ ShowWidget::~ShowWidget() {
 
 }
 
+/**
+ * 打开图像文件名，并显示
+ * @param fileName 文件名
+ * @return 图像是否显示成功
+ */
 bool ShowWidget::openFile(const QString &fileName) {
     _showImage = QImage(fileName);
     if (_showImage.isNull()) {
@@ -36,6 +41,10 @@ bool ShowWidget::openFile(const QString &fileName) {
     return true;
 }
 
+/**
+ * 初始化裁功能
+ * 也就是初始化遮盖层
+ */
 void ShowWidget::initCutMode() {
     if(nullptr != _coverLayer) {
         delete _coverLayer;
@@ -47,7 +56,10 @@ void ShowWidget::initCutMode() {
     _coverLayer->show();
 }
 
-
+/**
+ * 当前控件大小改变
+ * @param event 大小改变事件
+ */
 void ShowWidget::resizeEvent(QResizeEvent *event) {
     _canvasLayer->setHigherSize(this->size());
     _canvasLayer->showImage();
@@ -56,6 +68,7 @@ void ShowWidget::resizeEvent(QResizeEvent *event) {
 
 void ShowWidget::mouseMoveEvent(QMouseEvent *event) {
     static int n = 0;
+    //不松开n不变,要不然过快的拖拉速度，跟不上
     if(nullptr != _coverLayer && !_leftMouseClicked) {
         n = _coverLayerDirectionJudge(event->pos());
     }
@@ -63,7 +76,6 @@ void ShowWidget::mouseMoveEvent(QMouseEvent *event) {
     else if(_leftMouseClicked) {
         if(_layer->objectName() == "CoverLayer") {
             if(0 != n) {
-                //不松开n不变！！！！
                 _coverLayer->setOffset(QCursor::pos() - _oldPos,n);
             }
             else {
@@ -113,16 +125,21 @@ void ShowWidget::mouseReleaseEvent(QMouseEvent *event) {
 
 
 void ShowWidget::_initConnect() {
-    // connect(_canvasLayer,&CanvasLayer::sizeChanges,_coverLayer,&CoverLayer::effectBySizeOfLayer);
-    // connect(_canvasLayer,&CanvasLayer::positionChanges,_coverLayer,&CoverLayer::effectByPosOfLayer);
-    connect(_canvasLayer,&CanvasLayer::sendMessage,[this](const QString& str){emit setStatusMessage(str);});
+    connect(_canvasLayer,&CanvasLayer::zoomRatioChanges,[this](double ratio) {
+        emit statusMessageChanges(QString(" 分辨率:%1X%2 缩放比率:%3").arg(_showImage.width()).arg(_showImage.height()).arg(QString::number(ratio, 'f', 2)));
+    });
 }
 
+/**
+ * 遮盖层鼠标位置判断和样式设置
+ * @param pos 鼠标位置
+ * @return
+ */
 int ShowWidget::_coverLayerDirectionJudge(const QPoint &pos) {
     static int thickness = 10;
     static int oThickness = 2;//4
     static int iThickness = 8;//2
-
+    //遮盖层9个区域
     if(nullptr == _coverLayer) return 0;
     QPoint point = _coverLayer->pos();
     int width = _coverLayer->size().width();

@@ -18,19 +18,31 @@ CanvasLayer::~CanvasLayer() {
 
 }
 
-
+/**
+ * 设置画布层的图像
+ * 初始化关于原始图像的三个变量，_prototypeImage,_prototypeImageSize,_prototypeImageAspectRatio
+ * @param image 图像
+ */
 void CanvasLayer::setImage(const QImage& image) {
     _prototypeImage = image;
     _prototypeImageSize = _prototypeImage.size();
     _prototypeImageAspectRatio = static_cast<double>(_prototypeImage.width())/static_cast<double>(_prototypeImage.height());
 }
 
+/**
+ * 展示图像
+ */
 void CanvasLayer::showImage() {
    if(!_prototypeImage.isNull()) {
        _reLayout();
    }
 }
 
+/**
+ * 设置画布层图像并展示
+ * 等效于 setImage + showImage
+ * @param image 图像
+ */
 void CanvasLayer::showImage(const QImage& image) {
     _prototypeImage = image;
     _prototypeImageSize = _prototypeImage.size();
@@ -38,13 +50,11 @@ void CanvasLayer::showImage(const QImage& image) {
     _reLayout();
 }
 
-void CanvasLayer::Zoom(int n) {
-    double span = n>0?_pulleySpan:-_pulleySpan;
-    if((_currentZoomRatio + span) > 0) {
-        _reLayout(_currentZoomRatio + span);
-    }
-}
-
+/**
+ * 设置上一层大小
+ * 通常在上一层resize使用，效果是恢复默认布局
+ * @param size 上一层大小
+ */
 void CanvasLayer::setHigherSize(const QSize& size) {
     _offsetX = 0;
     _offsetY = 0;
@@ -65,7 +75,6 @@ void CanvasLayer::mouseMoveEvent(QMouseEvent *event) {
         event->accept();
     }
     else {
-        qDebug()<<"鼠标移动传递";
         event->ignore();
     }
 }
@@ -99,8 +108,6 @@ void CanvasLayer::mouseReleaseEvent(QMouseEvent *event) {
         _rigthMouseClicked = false;
         _x = this->pos().x();
         _y = this->pos().y();
-        _currentOffsetX += _offsetX;
-        _currentOffsetY += _offsetY;
         event->accept();
     } else {
         event->ignore();
@@ -135,13 +142,19 @@ void CanvasLayer::resizeEvent(QResizeEvent *event) {
     QWidget::resizeEvent(event);
 }
 
-
+/**
+ * 重新布局
+ * 该函数通常在缩放影响下使用，包括根据上一层大小设置默认缩放比率和根据缩放比率进行重新布局
+ * @param zoomLevel 缩放比率
+ * @return 结果
+ */
 bool CanvasLayer::_reLayout(double zoomLevel) {
     if(_prototypeImage.isNull()) return false;
+    static double tmp1 = 0;
+    static double tmp2 = 0;
     QSizeF suitable_size;//合适分辨率
-    //默认layout
+    //默认layout，只会在初次默认展示使用
     if(0.00 == zoomLevel) {
-        //依赖height
         if((_currentParentSize.width()/_prototypeImage.width())*_prototypeImage.height() > _currentParentSize.height()) {
             suitable_size.setHeight(_currentParentSize.height()*_defaultPercentage);
             suitable_size.setWidth(suitable_size.height()*_prototypeImageAspectRatio);
@@ -156,12 +169,12 @@ bool CanvasLayer::_reLayout(double zoomLevel) {
         _y = (_currentParentSize.height()-suitable_size.height())/2;
         tmp1 = suitable_size.toSize().width()/2+_x;
         tmp2 = suitable_size.toSize().height()/2+_y;
-        _vectorDirection = {_currentParentSize.width()/2-_x,_currentParentSize.height()/2-_y};
         _currentImageSize = suitable_size;
     }
     else {
         suitable_size = QSize(_prototypeImage.width()*zoomLevel,_prototypeImage.height()*zoomLevel);
         double px,py;
+        //原地放大，偏移恢复
         if(_offsetX==0 && _offsetY==0) {
             _x += (_currentZoomRatio*_prototypeImage.width() - suitable_size.toSize().width())/2;
             _y += (_currentZoomRatio*_prototypeImage.height() - suitable_size.toSize().height())/2;
@@ -180,41 +193,27 @@ bool CanvasLayer::_reLayout(double zoomLevel) {
     return true;
 }
 
-bool CanvasLayer::_resizeLabel(double ratio) {
-    if(!_image.isNull()) {
-        QSize image_size = _image.size();
-        QSize suitable_size;
-        double image_width = image_size.width();
-        double image_height = image_size.height();
-
-        if(image_size.width() > image_size.height()) {
-            suitable_size.setWidth(_parentSize.width()*0.8);
-            suitable_size.setHeight(suitable_size.width()*ratio);
-        }
-        else {
-            suitable_size.setHeight(_parentSize.height()*0.8);
-            suitable_size.setWidth(suitable_size.height()*ratio);
-        }
-        _currentZoomRatio = suitable_size.width()/image_width;
-        this->setPixmap(QPixmap::fromImage(_image.scaled(suitable_size)));
-        this->setGeometry((_parentSize.width()-suitable_size.width())/2,(_parentSize.height()-suitable_size.height())/2,suitable_size.width(),suitable_size.height());
-        return true;
-    }
-    return false;
-}
-
+/**
+ * 改变当前层大小
+ * 附加改变图像尺寸，传输当前缩放尺度信息给上一层
+ * @param width resize宽度
+ * @param height resize高度
+ * @return 返回结果
+ */
 bool CanvasLayer::_resizeLabel(int width,int height) {
     if(_prototypeImage.isNull()) return false;
     this->setPixmap(QPixmap::fromImage(_prototypeImage.scaled(width,height)));
     this->resize(width,height);
-    emit sendMessage(QString("%1  原分辨率:%2x%3 缩放尺度:%4 ").arg(_filePath).arg(_prototypeImage.width()).arg(_prototypeImage.height()).arg(QString::number(_currentZoomRatio, 'f', 2)));//减少一下文件目录长度
+    emit zoomRatioChanges(_currentZoomRatio);
     return true;
 }
 
+/**
+ * 当前图层移动
+ */
 void CanvasLayer::_move() {
     int moveX = _currentPoint.x() - _startPoint.x();
     int moveY = _currentPoint.y() - _startPoint.y();
-    // if(nullptr != _mask) _mask->Move(_x+moveX,_y+moveY);
     this->move(_x+moveX,_y+moveY);
     _offsetX = moveX;
     _offsetY = moveY;

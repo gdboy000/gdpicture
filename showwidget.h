@@ -34,17 +34,17 @@ private:
     CanvasLayer* _canvasLayer = nullptr;//画布层
     CoverLayer* _coverLayer = nullptr;//遮盖层
     CLayer* _layer = nullptr;
-    bool _leftMouseClicked = false;
-    bool _rightMouseClicked = false;
-    QPoint _startClickedPoint;
-    QImage _showImage;
-    QPoint _oldPos;
-    int _coverLayerDirectionJudge(const QPoint&);
-    void _initConnect();
+    bool _leftMouseClicked = false;//鼠标左键点击状态
+    bool _rightMouseClicked = false;//鼠标右键点击状态
+    QPoint _startClickedPoint;//开始点击position
+    QImage _showImage;//需要展示的图片
+    QPoint _oldPos;//之前position
+    int _coverLayerDirectionJudge(const QPoint&);//遮盖层鼠标位置判断和样式设置
+    void _initConnect();//初始化连接
 
 signals:
-    void sizeChanged(QSize);
-    void setStatusMessage(const QString&);
+    void sizeChanges(QSize);
+    void statusMessageChanges(const QString&);//消息改变信号
 
 };
 
