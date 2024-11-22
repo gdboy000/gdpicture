@@ -12,6 +12,7 @@
 CanvasLayer::CanvasLayer(QWidget *parent) : CLayer(parent)
 {
     setObjectName("CanvasLayer");
+    this->setMouseTracking(true);
 }
 
 CanvasLayer::~CanvasLayer() {

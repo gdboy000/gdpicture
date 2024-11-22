@@ -53,9 +53,6 @@ MainWindow::~MainWindow() {
  * @param event
  */
 void MainWindow::resizeEvent(QResizeEvent *event) {
-    // _statusBarLabel1->setMaximumWidth(this->width()/3);
-    // QFontMetrics fm(_statusBarLabel1->font());
-    // _statusBarLabel1->setText(fm.elidedText(_statusBarLabel1->text(), Qt::ElideMiddle, _statusBarLabel1->width()));
     _ui->widget->resize(_ui->centralwidget->size());//未设置布局，不会主动填充
     QMainWindow::resizeEvent(event);
 }
@@ -74,6 +71,7 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
  */
 void MainWindow::_initConnect() {
     connect(_ui->open,&QAction::triggered,this,&MainWindow::_openFileWidget);
+    connect(_ui->save,&QAction::triggered,this,&MainWindow::_saveImage);
     connect(_ui->close,&QAction::triggered,[this]{this->close();});
     connect(_ui->tool,&QAction::triggered,this,&MainWindow::_toolsBarShow);
     connect(_showWidget,&ShowWidget::statusMessageChanges,[this](const QString& str){_statusBarLabel2->setText(str);});
@@ -119,7 +117,43 @@ void MainWindow::_toolsBarShow() const{
     if(!_wheelEventFlag) {_statusBarLabel1->setText("无操作图像"); return;}
     if(this->_ui->toolBar->isVisible()) this->_ui->toolBar->hide();
     else this->_ui->toolBar->show();
+    _ui->widget->resize(_ui->centralwidget->size());
 }
+void MainWindow::_showOptionWidget() {
+    _optionWidget = new QWidget(this);
+    _optionWidget->setStyleSheet("QWidget {border:1px solid rgba(0,0,0,0.5);border-radius:3px;} QWidget QPushButton{min-width:30px;min-height:33px;border:none;font-size:10px;} QWidget QPushButton:hover{border-radius:0px;}");
+    QPushButton* confirmBtn = new QPushButton(_optionWidget);
+    confirmBtn->setStyleSheet(":hover{background-color:green;}");
+    confirmBtn->setText("确认");
+    QPushButton* closeBtn = new QPushButton(_optionWidget);
+    closeBtn->setText("关闭");
+    closeBtn->setStyleSheet(":hover{background-color:red}");
+    QPushButton* flushBtn = new QPushButton(_optionWidget);
+    flushBtn->setStyleSheet(":hover{background-color:black;color:white;}");
+    flushBtn->setText("刷新");
+    _optionWidget->setLayout(new QHBoxLayout);
+    _optionWidget->layout()->setContentsMargins(1,0,1,0);
+    _optionWidget->layout()->addWidget(confirmBtn);
+    _optionWidget->layout()->addWidget(closeBtn);
+    _optionWidget->layout()->addWidget(flushBtn);
+    _optionWidget->setFixedSize(100,35);
+    _optionWidget->layout()->setSpacing(0);
+    _optionWidget->move(100,100);
+    _optionWidget->hide();
+    connect(confirmBtn,&QPushButton::clicked,[this]{});
+    connect(closeBtn,&QPushButton::clicked,[this]{});
+    connect(flushBtn,&QPushButton::clicked,[this]{});
+}
+
+void MainWindow::_saveImage() {
+    if(_showWidget->saveCutRegion("/home/gao/CLionProjects/PicEditor/imgs/demo.jpg")) {
+        qDebug()<<"保存成功";
+    }
+    else {
+        qDebug()<<"保存失败";
+    }
+}
+
 
 
 

@@ -28,6 +28,7 @@ private:
     Ui::MainWindow* _ui;
     QString _filePath;
     ShowWidget* _showWidget = nullptr;
+    QWidget* _optionWidget = nullptr;
     QWidget* _toolWidget = nullptr;
     QLabel* _statusBarLabel1 = nullptr;
     QLabel* _statusBarLabel2 = nullptr;
@@ -36,6 +37,8 @@ private:
     void _openFileWidget();//open file widget
     void _decorationToolsBar();
     void _toolsBarShow() const;
+    void _showOptionWidget();
+    void _saveImage();
 };
 
 

@@ -7,6 +7,7 @@
 
 #include "clayer.h"
 
+#include <deque>
 //遮盖层
 class CoverLayer :public CLayer{
     Q_OBJECT
@@ -17,15 +18,25 @@ public:
     void effectBySizeOfLayer(const QSize&);//受其它层大小影响
     void effectByPosOfLayer(const QPoint&);//受其它层位置影响
     void setOffset(const QPoint &,int) override;//偏移
+    void moveEnd();//结束移动
+    bool moveBack();//修改返回
+    void setDefaultLayer();//设置默认layout
+    void showOption(QWidget*);
+    QPoint getRelativePosition(){ return QPoint(_currentX,_currentY);}
 protected:
     void paintEvent(QPaintEvent *event) override;
 private:
     int _x,_y;
     double _width,_height;
-    int _currentX,_currentY;//该position是相较于受限制层的位置
+    int _currentX,_currentY;
     double _currentWidth,_currentHeight;
     int _partnerX,_partnerY;
     double _partnerWidth,_partnerHeight;
+    int _direction = 3;
+    std::deque<QRect> _memPosition;
+    std::deque<QSize> _memPartnerSize;
+    QRect _tmpPosition;
+    QSize _tmpPartnerSize;
 };
 
 

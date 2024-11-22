@@ -40,9 +40,29 @@ void CoverLayer::setRestrictedLayer(const CLayer* layer) {
     _partnerY = layer->pos().y();
     _partnerWidth = _currentWidth = layer->size().width();
     _partnerHeight = _currentHeight = layer->size().height();
+    _memPosition.clear();
+    _memPartnerSize.clear();
+    _memPosition.push_back(QRect(_currentX,_currentY,_currentWidth,_currentHeight));
+    _memPartnerSize.push_back(QSize(_partnerWidth,_partnerHeight));
+    _tmpPosition = {0,0,0,0};
     connect(layer,&CLayer::moved,[this](QPoint point){effectByPosOfLayer(point);});
     connect(layer,&CLayer::resized,[this](QSize size){effectBySizeOfLayer(size);});
 }
+
+void CoverLayer::setDefaultLayer() {
+    this->resize(_partnerWidth,_partnerHeight);
+    this->move(_partnerX,_partnerY);
+    _currentX = 0;
+    _currentY = 0;
+    _currentWidth = _partnerWidth;
+    _currentHeight = _partnerHeight;
+    _memPosition.clear();
+    _memPartnerSize.clear();
+    _memPosition.push_back(QRect(_currentX,_currentY,_currentWidth,_currentHeight));
+    _memPartnerSize.push_back(QSize(_partnerWidth,_partnerHeight));
+    _tmpPosition = {0,0,0,0};
+}
+
 
 /**
  * 收到限制层大小，重新布局
@@ -159,6 +179,41 @@ void CoverLayer::setOffset(const QPoint &point,int n) {
     _currentX = _currentX + _x;
     _currentY = _currentY + _y;
 }
+
+void CoverLayer::moveEnd() {
+    if(_tmpPosition.size() != QSize(0,0)) {
+        _memPosition.push_back(_tmpPosition);
+        _memPartnerSize.push_back(_tmpPartnerSize);
+    }
+    _tmpPosition = QRect(_currentX,_currentY,_currentWidth,_currentHeight);
+    _tmpPartnerSize = QSize(_partnerWidth,_partnerHeight);
+}
+
+bool CoverLayer::moveBack() {
+    QRect rect = _memPosition.back();
+    QSize size = _memPartnerSize.back();
+    //等比例操作 原图横宽/原伙伴横宽 == 现在横宽/现在伙伴横宽
+    const double ratio = _partnerWidth/size.width();
+    //等比例size
+    rect.setWidth(qRound(rect.width()*ratio));
+    rect.setHeight(qRound(rect.height()*ratio));
+    //等比例position
+    rect.setX(qRound(rect.x()*ratio));
+    rect.setY(qRound(rect.y()*ratio));
+    this->resize(rect.size());
+    this->move(rect.x()+_partnerX,rect.y()+_partnerY);
+    _currentWidth = rect.width();
+    _currentHeight = rect.height();
+    _currentX = rect.x();
+    _currentY = rect.y();
+    if(1 != _memPosition.size()) {
+        _memPosition.pop_back();
+        _memPartnerSize.pop_back();
+        return false;
+    }
+    return true;
+}
+
 
 /**
  * 重新绘制边框，和内部样式
