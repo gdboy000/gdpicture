@@ -23,7 +23,7 @@ public:
     bool openImage(const QImage &);
     void initCutMode();//初始化裁剪功能
     QRect getCutRange();//获取裁剪范围
-    bool saveCutRegion(const QString&);//保存裁剪区域
+    bool saveCutRegion(const QString&,QString& message);//保存裁剪区域
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

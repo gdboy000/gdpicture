@@ -27,6 +27,9 @@ qt_add_executable(PicEditor
         coverlayer.cpp
         coverlayer.h
         clayer.h
+        savefiledialog.cpp
+        savefiledialog.h
+        savefiledialog.ui
 )
 
 target_link_libraries(PicEditor PRIVATE

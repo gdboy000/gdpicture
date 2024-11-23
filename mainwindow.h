@@ -9,6 +9,7 @@
 
 class QLabel;
 class ShowWidget;
+class SaveFileDialog;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,6 +29,7 @@ private:
     Ui::MainWindow* _ui;
     QString _filePath;
     ShowWidget* _showWidget = nullptr;
+    SaveFileDialog* _saveDialog = nullptr;
     QWidget* _optionWidget = nullptr;
     QWidget* _toolWidget = nullptr;
     QLabel* _statusBarLabel1 = nullptr;
@@ -38,7 +40,8 @@ private:
     void _decorationToolsBar();
     void _toolsBarShow() const;
     void _showOptionWidget();
-    void _saveImage();
+    void _saveImageSelect();
+    void _saveImage(const QString&);
 };
 
 

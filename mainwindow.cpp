@@ -11,6 +11,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "showwidget.h"
+#include "savefiledialog.h"
 
 #define SHOW(str) qDebug()<<str
 
@@ -26,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //展示窗口
     _showWidget = new ShowWidget(_ui->widget);
     _ui->widget->layout()->addWidget(_showWidget);
+
+    _saveDialog = new SaveFileDialog(this);
     //工具窗口，需要设置最大宽度
     _toolWidget = new QWidget(_ui->widget);
     _ui->widget->layout()->addWidget(_toolWidget);
@@ -34,9 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _statusBarLabel1 = new QLabel(this);
     _statusBarLabel1->setFixedSize(250,20);
     _ui->statusbar->addWidget(_statusBarLabel1);
-    // QAction* action = new QAction();
-    // action->setSeparator(true);
-    // _ui->statusbar->addAction(action);//添加分隔符
+
     _statusBarLabel2 = new QLabel(this);
     _ui->statusbar->addWidget(_statusBarLabel2);
 
@@ -71,10 +72,11 @@ void MainWindow::wheelEvent(QWheelEvent *event) {
  */
 void MainWindow::_initConnect() {
     connect(_ui->open,&QAction::triggered,this,&MainWindow::_openFileWidget);
-    connect(_ui->save,&QAction::triggered,this,&MainWindow::_saveImage);
+    connect(_ui->save,&QAction::triggered,this,&MainWindow::_saveImageSelect);
     connect(_ui->close,&QAction::triggered,[this]{this->close();});
     connect(_ui->tool,&QAction::triggered,this,&MainWindow::_toolsBarShow);
     connect(_showWidget,&ShowWidget::statusMessageChanges,[this](const QString& str){_statusBarLabel2->setText(str);});
+    connect(_saveDialog,&SaveFileDialog::savePathChanged,this,&MainWindow::_saveImage);
 }
 
 /**
@@ -145,14 +147,28 @@ void MainWindow::_showOptionWidget() {
     connect(flushBtn,&QPushButton::clicked,[this]{});
 }
 
-void MainWindow::_saveImage() {
-    if(_showWidget->saveCutRegion("/home/gao/CLionProjects/PicEditor/imgs/demo.jpg")) {
-        qDebug()<<"保存成功";
+void MainWindow::_saveImageSelect() {
+    if(!_wheelEventFlag) {
+        _statusBarLabel1->setText("无操作图像");
+        return;
+    }
+    QFileInfo fileInfo(_filePath);
+    _saveDialog->setDefaultPath(fileInfo.absoluteDir().path(),fileInfo.completeBaseName()+"_1",fileInfo.suffix());
+    _saveDialog->open();
+}
+
+void MainWindow::_saveImage(const QString &path) {
+    QString result;
+    if(_showWidget->saveCutRegion(path,result)) {
+        _statusBarLabel1->setText("保存成功");
+        _saveDialog->close();
     }
     else {
-        qDebug()<<"保存失败";
+        qDebug()<<result;
+        _saveDialog->setResultMessage(result);
     }
 }
+
 
 
 

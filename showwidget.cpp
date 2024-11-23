@@ -11,6 +11,7 @@
 #include <QCursor>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QFile>
 
 
 
@@ -84,9 +85,13 @@ void ShowWidget::initCutMode() {
     _showOption(_coverLayer->pos()+QPoint(_coverLayer->width(),_coverLayer->height()));
 }
 
-bool ShowWidget::saveCutRegion(const QString &path) {
+bool ShowWidget::saveCutRegion(const QString &path,QString& message) {
     QImage image = _semiImage.back();
-    return image.save(path, "JPEG");
+    if(QFile(path).exists()) {
+        message = QString("文件已存在");
+        return false;
+    }
+    return image.save(path);
 }
 
 
