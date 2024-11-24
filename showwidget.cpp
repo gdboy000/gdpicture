@@ -46,6 +46,12 @@ bool ShowWidget::openFile(const QString &fileName) {
     _canvasLayer->setHigherSize(this->size());
     _canvasLayer->showImage(_showImage);
     _canvasLayer->show();
+    if(nullptr != _coverLayer) {
+        _coverLayer->close();
+        delete _coverLayer;
+        _coverLayer = nullptr;
+        _option->hide();
+    }
     return true;
 }
 

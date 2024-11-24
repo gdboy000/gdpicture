@@ -4,8 +4,6 @@
 
 // You may need to build the project (run Qt uic code generator) to get "ui_MainWindow.h" resolved
 #include <QFileDialog>
-#include <QIcon>
-#include <QScreen>
 #include <QPushButton>
 #include <QWheelEvent>
 #include "mainwindow.h"
@@ -103,21 +101,24 @@ void MainWindow::_decorationToolsBar() {
  */
 void MainWindow::_openFileWidget() {
     _filePath = QFileDialog::getOpenFileName(this, tr("Open File"), "/home/gao", tr("Image Files (*.png *.jpg *.bmp *.jepg)"));
-    if(_showWidget->openFile(_filePath)){
+    if(!_filePath.isEmpty() && _showWidget->openFile(_filePath)){
         _wheelEventFlag = true;
-        _toolsBarShow();
+        _toolsBarShow(true);
         _statusBarLabel1->setText(_filePath);
         QFontMetrics fm(_statusBarLabel1->font());
         _statusBarLabel1->setText(fm.elidedText(_filePath, Qt::ElideMiddle, _statusBarLabel1->width()));
     }
+    else {
+        _statusBarLabel1->setText(QString("%1 文件打开失败").arg(_filePath));
+    }
 }
 
 /**
- * tools bar to display
+ * tools bar to display,if show is true force show
  */
-void MainWindow::_toolsBarShow() const{
+void MainWindow::_toolsBarShow(bool show) const{
     if(!_wheelEventFlag) {_statusBarLabel1->setText("无操作图像"); return;}
-    if(this->_ui->toolBar->isVisible()) this->_ui->toolBar->hide();
+    if(this->_ui->toolBar->isVisible() && !show) this->_ui->toolBar->hide();
     else this->_ui->toolBar->show();
     _ui->widget->resize(_ui->centralwidget->size());
 }
@@ -147,6 +148,10 @@ void MainWindow::_showOptionWidget() {
     connect(flushBtn,&QPushButton::clicked,[this]{});
 }
 
+/**
+ * 菜单栏另存为点击进入此函数
+ * 打开文件保存配置窗口
+ */
 void MainWindow::_saveImageSelect() {
     if(!_wheelEventFlag) {
         _statusBarLabel1->setText("无操作图像");
@@ -157,6 +162,11 @@ void MainWindow::_saveImageSelect() {
     _saveDialog->open();
 }
 
+/**
+ * 文件保存窗口点击确认后
+ * 失败不关闭文件保存窗口并显示问题
+ * @param path 保存路径
+ */
 void MainWindow::_saveImage(const QString &path) {
     QString result;
     if(_showWidget->saveCutRegion(path,result)) {

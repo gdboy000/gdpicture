@@ -45,8 +45,8 @@ void CoverLayer::setRestrictedLayer(const CLayer* layer) {
     _memPosition.push_back(QRect(_currentX,_currentY,_currentWidth,_currentHeight));
     _memPartnerSize.push_back(QSize(_partnerWidth,_partnerHeight));
     _tmpPosition = {0,0,0,0};
-    connect(layer,&CLayer::moved,[this](QPoint point){effectByPosOfLayer(point);});
-    connect(layer,&CLayer::resized,[this](QSize size){effectBySizeOfLayer(size);});
+    connect(layer,&CLayer::moved,this,&CoverLayer::effectByPosOfLayer);
+    connect(layer,&CLayer::resized,this,&CoverLayer::effectBySizeOfLayer);
 }
 
 void CoverLayer::setDefaultLayer() {

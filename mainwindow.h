@@ -38,7 +38,7 @@ private:
     void _initConnect();//init connect
     void _openFileWidget();//open file widget
     void _decorationToolsBar();
-    void _toolsBarShow() const;
+    void _toolsBarShow(bool show = false) const;
     void _showOptionWidget();
     void _saveImageSelect();
     void _saveImage(const QString&);
